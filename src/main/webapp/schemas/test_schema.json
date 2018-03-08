@@ -1,0 +1,2 @@
+{  "id": "test",
+  "$schema": "http://json-schema.org/draft-04/schema#","type":"object","properties":{"id":{"type":"string","format":"unnamed-format"},"text1":{"type":"string","format":"unnamed-format"},"text2":{"type":"string","format":"unnamed-format"}},"required":["id","text2"]}

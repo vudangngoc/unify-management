@@ -1,0 +1,77 @@
+<html>
+<head>
+<link rel="stylesheet" href='dist/css/brutusin-json-forms.min.css' />
+
+
+</head>
+<body>
+
+	<div id="divSchemaList" style="display: inline;">
+		<select id="schemaList" onchange="loadItems(this.value)">
+		</select>
+	</div>
+	<div id="divItemList" style="display: inline;">
+		<select id="itemList" onchange="loadItem(this.value)">
+		</select>
+	</div>
+
+	<div id='container'
+		style="padding-left: 12px; padding-right: 12px; padding-bottom: 12px;"></div>
+
+<button type="button" onclick='saveItem()'>Save</button>
+<button type="button" onclick='deleteItem()'>Delete</button>
+<button type="button" onclick='alert(bf.validate())'>Validate</button>
+	<script src="dist/js/utils.js"></script>
+	<script src="dist/js/brutusin-json-forms.min.js"></script>
+	<script src="dist/js/brutusin-json-forms-bootstrap.min.js"></script>
+	<script lang="javascript">
+		loadItem = function(eventContext) {
+			var itemId = document.getElementById("itemList").value;
+			var schemaName = document.getElementById("schemaList").value;
+			render(schemaName,itemId);
+		}
+		loadItems = function(eventContext) {
+			var schemaName = document.getElementById("schemaList").value;
+			loadDropDownList("/object/getAllKeys?domain=" + schemaName,"divItemList","itemList",loadItem);
+		}
+		loadDropDownList("/schemas", "divSchemaList", "schemaList", loadItems);
+		var BrutusinForms = brutusin["json-forms"];
+		BrutusinForms.bootstrap.addFormatDecorator("inputstream", "file",
+				"glyphicon-search", function(element) {
+					alert("user callback on element " + element)
+				});
+		BrutusinForms.bootstrap.addFormatDecorator("color", "color");
+		BrutusinForms.bootstrap.addFormatDecorator("date", "date");
+
+		function saveItem(){
+			var item = bf.getData();
+			if(item === null)
+				return;
+			var domainName = document.getElementById("schemaList").value;
+			post('/object/save?domain='+domainName+'&jsonData=',JSON.stringify(item), function(res){alert(res);loadItems('');});
+		}
+		function deleteItem(){
+			var item = bf.getData();
+			if(item === null)
+				return;
+			var domainName = document.getElementById("schemaList").value;
+			put('/object/delete?domain='+domainName+'&jsonData=',JSON.stringify(item), function(res){alert(res);loadItems('');});
+		}
+		function render(schemaName,itemId) {
+			get('/object/get?domain='+schemaName+'&id='+itemId,
+					function(jsondata) {
+						get('/schemas/'+schemaName+'_schema.json', function(res) {
+							bf = BrutusinForms.create(JSON.parse(res));
+							var container = document
+									.getElementById('container');
+							while (container.firstChild) {
+								container.removeChild(container.firstChild);
+							}
+							bf.render(container, JSON.parse(jsondata));
+						});
+
+					});
+		}
+	</script>
+</body>
+</html>
